@@ -31,7 +31,6 @@ import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.zht.qrcodescanner.activity.CaptureActivity;
-import com.zht.qrcodescanner.config.HandlerCode;
 
 
 import java.io.ByteArrayOutputStream;
@@ -57,15 +56,22 @@ final class DecodeHandler extends Handler {
         if (message == null || !running) {
             return;
         }
-        switch (message.what) {
-            case HandlerCode.decode://解码
-                decode((byte[]) message.obj, message.arg1, message.arg2);
-                break;
-            case HandlerCode.quit://退出处理
-                running = false;
-                Looper.myLooper().quit();
-                break;
+        if (message.what == R.id.decode) {
+            decode((byte[]) message.obj, message.arg1, message.arg2);
+        } else if (message.what == R.id.quit) {
+            running = false;
+            Looper.myLooper().quit();
         }
+
+//        switch (message.what) {
+//            case HandlerCode.decode://解码
+//                decode((byte[]) message.obj, message.arg1, message.arg2);
+//                break;
+//            case HandlerCode.quit://退出处理
+//                running = false;
+//                Looper.myLooper().quit();
+//                break;
+//        }
     }
 
     /**
@@ -82,10 +88,10 @@ final class DecodeHandler extends Handler {
         long start = System.nanoTime();
         Result rawResult = null;
 
-        Log.e(TAG, "decode: ");
-        Log.e(TAG, "width: " + width);
-        Log.e(TAG, "height: " + height);
-        Log.e(TAG, "data: " + data.length);
+//        Log.e(TAG, "decode: ");
+//        Log.e(TAG, "width: " + width);
+//        Log.e(TAG, "height: " + height);
+//        Log.e(TAG, "data: " + data.length);
 
         //此处通过CameraManager获取图片
         PlanarYUVLuminanceSource source =
@@ -95,8 +101,9 @@ final class DecodeHandler extends Handler {
             try {
                 //解码图片
                 rawResult = multiFormatReader.decodeWithState(bitmap);
-            } catch (ReaderException re) {
+            } catch (Exception re) {
                 // continue
+                re.printStackTrace();
             } finally {
                 multiFormatReader.reset();
             }

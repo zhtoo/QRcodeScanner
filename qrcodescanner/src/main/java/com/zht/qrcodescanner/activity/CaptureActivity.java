@@ -99,47 +99,48 @@ public class CaptureActivity extends Activity
             }
         });
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            String[] permissions = {
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.VIBRATE
-            };
-            isDenied = false;
-            for (String permission : permissions) {
-                int permissionStatus = ContextCompat.checkSelfPermission(this,
-                        permission);
-                if (permissionStatus == PackageManager.PERMISSION_DENIED) {
-                    isDenied = true;
-                }
-
-            }
-            if (isDenied) {
-                requestPermissions(permissions, PERMISSION_REQUEST_CODE);
-                return;
-            }
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            String[] permissions = {
+//                    Manifest.permission.CAMERA,
+//                    Manifest.permission.VIBRATE
+//            };
+//            isDenied = false;
+//            for (String permission : permissions) {
+//                int permissionStatus = ContextCompat.checkSelfPermission(this,
+//                        permission);
+//                if (permissionStatus == PackageManager.PERMISSION_DENIED) {
+//                    isDenied = true;
+//                    break;
+//                }
+//
+//            }
+//            if (isDenied) {
+//                requestPermissions(permissions, PERMISSION_REQUEST_CODE);
+//                return;
+//            }
+//        }
     }
 
-    private static final int PERMISSION_REQUEST_CODE = 100;
+//    private static final int PERMISSION_REQUEST_CODE = 100;
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults == null) {
-                return;
-            }
-            int isDeniedResult = 0;
-            for (int result : grantResults) {
-                isDeniedResult += result;
-            }
-            if (isDeniedResult == 0) {//同意
-                isDenied = false;
-            } else {//被拒绝
-
-            }
-        }
-
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        if (requestCode == PERMISSION_REQUEST_CODE) {
+//            if (grantResults == null) {
+//                return;
+//            }
+//            int isDeniedResult = 0;
+//            for (int result : grantResults) {
+//                isDeniedResult += result;
+//            }
+//            if (isDeniedResult == 0) {//同意
+//                isDenied = false;
+//            } else {//被拒绝
+//
+//            }
+//        }
+//
+//    }
 
     public static int getStatusBarHeight(Context context) {
         Resources resources = context.getResources();
@@ -214,7 +215,6 @@ public class CaptureActivity extends Activity
 
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onResume: ");
         inactivityTimer.shutdown();
         super.onDestroy();
     }

@@ -35,13 +35,9 @@ import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
 import com.zht.qrcodescanner.activity.CaptureActivity;
 import com.zht.qrcodescanner.camera.CameraManager;
-import com.zht.qrcodescanner.config.HandlerCode;
 
 import java.util.Collection;
 import java.util.Map;
-
-import static com.zht.qrcodescanner.config.HandlerCode.restart_preview;
-
 
 /**
  * This class handles all the messaging which comprises the state machine for capture.
@@ -85,69 +81,91 @@ public final class CaptureHandler extends Handler {
 
     @Override
     public void handleMessage(Message message) {
-        switch (message.what) {
-            case HandlerCode.restart_preview:
-                restartPreviewAndDecode();
-                break;
-            case HandlerCode.decode_succeeded://解码成功
-                state = State.SUCCESS;
-                Bundle bundle = message.getData();
-                Bitmap barcode = null;
-                float scaleFactor = 1.0f;
-                if (bundle != null) {
-                    byte[] compressedBitmap = bundle.getByteArray(DecodeThread.BARCODE_BITMAP);
-                    if (compressedBitmap != null) {
-                        barcode = BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, null);
-                        // Mutable copy:
-                        barcode = barcode.copy(Bitmap.Config.ARGB_8888, true);
-                    }
-                    scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);
+        if (message.what == R.id.restart_preview) {
+            restartPreviewAndDecode();
+        } else if (message.what == R.id.decode_succeeded) { //解码成功
+            state = State.SUCCESS;
+            Bundle bundle = message.getData();
+            Bitmap barcode = null;
+            float scaleFactor = 1.0f;
+            if (bundle != null) {
+                byte[] compressedBitmap = bundle.getByteArray(DecodeThread.BARCODE_BITMAP);
+                if (compressedBitmap != null) {
+                    barcode = BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, null);
+                    // Mutable copy:
+                    barcode = barcode.copy(Bitmap.Config.ARGB_8888, true);
                 }
-                activity.handleDecode((Result) message.obj, barcode, scaleFactor);
-                break;
-            case HandlerCode.decode_failed://解码失败
-                // We're decoding as fast as possible, so when one decode fails, start another.
-                state = State.PREVIEW;
-                cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
-                break;
-            case HandlerCode.return_scan_result:
-                activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
-                activity.finish();
-                break;
-            case HandlerCode.launch_product_query:
-                String url = (String) message.obj;
-
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.addFlags(Intents.FLAG_NEW_DOC);
-                intent.setData(Uri.parse(url));
-
-                ResolveInfo resolveInfo =
-                        activity.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-                String browserPackageName = null;
-                if (resolveInfo != null && resolveInfo.activityInfo != null) {
-                    browserPackageName = resolveInfo.activityInfo.packageName;
-                    Log.d(TAG, "Using browser in package " + browserPackageName);
-                }
-
-                // Needed for default Android browser / Chrome only apparently
-                if (browserPackageName != null) {
-                    switch (browserPackageName) {
-                        case "com.android.browser":
-                        case "com.android.chrome":
-                            intent.setPackage(browserPackageName);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            intent.putExtra(Browser.EXTRA_APPLICATION_ID, browserPackageName);
-                            break;
-                    }
-                }
-
-                try {
-                    activity.startActivity(intent);
-                } catch (ActivityNotFoundException ignored) {
-                    Log.w(TAG, "Can't find anything to handle VIEW of URI");
-                }
-                break;
+                scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);
+            }
+            activity.handleDecode((Result) message.obj, barcode, scaleFactor);
+        } else if (message.what == R.id.decode_failed) {
+             state = State.PREVIEW;
+             cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
         }
+
+//        switch (message.what) {
+//            case HandlerCode.restart_preview:
+//                restartPreviewAndDecode();
+//                break;
+//            case HandlerCode.decode_succeeded://解码成功
+//                state = State.SUCCESS;
+//                Bundle bundle = message.getData();
+//                Bitmap barcode = null;
+//                float scaleFactor = 1.0f;
+//                if (bundle != null) {
+//                    byte[] compressedBitmap = bundle.getByteArray(DecodeThread.BARCODE_BITMAP);
+//                    if (compressedBitmap != null) {
+//                        barcode = BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, null);
+//                        // Mutable copy:
+//                        barcode = barcode.copy(Bitmap.Config.ARGB_8888, true);
+//                    }
+//                    scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);
+//                }
+//                activity.handleDecode((Result) message.obj, barcode, scaleFactor);
+//                break;
+//            case HandlerCode.decode_failed://解码失败
+//                // We're decoding as fast as possible, so when one decode fails, start another.
+//                state = State.PREVIEW;
+//                cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
+//                break;
+//            case HandlerCode.return_scan_result:
+//                activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
+//                activity.finish();
+//                break;
+//            case HandlerCode.launch_product_query:
+//                String url = (String) message.obj;
+//
+//                Intent intent = new Intent(Intent.ACTION_VIEW);
+//                intent.addFlags(Intents.FLAG_NEW_DOC);
+//                intent.setData(Uri.parse(url));
+//
+//                ResolveInfo resolveInfo =
+//                        activity.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+//                String browserPackageName = null;
+//                if (resolveInfo != null && resolveInfo.activityInfo != null) {
+//                    browserPackageName = resolveInfo.activityInfo.packageName;
+//                    Log.d(TAG, "Using browser in package " + browserPackageName);
+//                }
+//
+//                // Needed for default Android browser / Chrome only apparently
+//                if (browserPackageName != null) {
+//                    switch (browserPackageName) {
+//                        case "com.android.browser":
+//                        case "com.android.chrome":
+//                            intent.setPackage(browserPackageName);
+//                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                            intent.putExtra(Browser.EXTRA_APPLICATION_ID, browserPackageName);
+//                            break;
+//                    }
+//                }
+//
+//                try {
+//                    activity.startActivity(intent);
+//                } catch (ActivityNotFoundException ignored) {
+//                    Log.w(TAG, "Can't find anything to handle VIEW of URI");
+//                }
+//                break;
+//        }
     }
 
     public void quitSynchronously() {

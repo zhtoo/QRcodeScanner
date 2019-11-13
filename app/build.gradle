@@ -27,8 +27,6 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    //谷歌二维码扫描器
-    api 'com.google.zxing:core:3.4.0'
     implementation project(path: ':qrcodescanner')
 
 
