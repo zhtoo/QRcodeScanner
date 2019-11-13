@@ -1,8 +1,4 @@
 <resources>
     <string name="app_name">QRcodeScanner</string>
 
-    <string name="button_ok">确定</string>
-
-    <string name="msg_camera_framework_bug">很遗憾，Android 相机出现问题。你可能需要重启设备。</string>
-
 </resources>

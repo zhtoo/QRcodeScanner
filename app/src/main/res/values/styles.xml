@@ -8,18 +8,4 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-
-    <style name="QRcode" >
-        <!--//无标题-->
-        <item name="android:windowNoTitle">true</item>
-        <!--//无ActionBar-->
-        <item name="android:windowActionBar">false</item>
-        <!--//全屏即无通知栏-->
-        <item name="android:windowFullscreen">true</item>
-        <!--//是否有遮盖-->
-        <item name="android:windowContentOverlay">@null</item>
-    </style>
-
-
-
 </resources>
