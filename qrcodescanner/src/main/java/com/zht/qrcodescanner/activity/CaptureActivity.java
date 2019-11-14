@@ -20,7 +20,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 
-import androidx.core.content.ContextCompat;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
@@ -35,9 +34,9 @@ import com.zht.qrcodescanner.ViewfinderView;
 import com.zht.qrcodescanner.camera.CameraManager;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+
 
 public class CaptureActivity extends Activity
         implements SurfaceHolder.Callback {
@@ -98,49 +97,7 @@ public class CaptureActivity extends Activity
                 finish();
             }
         });
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            String[] permissions = {
-//                    Manifest.permission.CAMERA,
-//                    Manifest.permission.VIBRATE
-//            };
-//            isDenied = false;
-//            for (String permission : permissions) {
-//                int permissionStatus = ContextCompat.checkSelfPermission(this,
-//                        permission);
-//                if (permissionStatus == PackageManager.PERMISSION_DENIED) {
-//                    isDenied = true;
-//                    break;
-//                }
-//
-//            }
-//            if (isDenied) {
-//                requestPermissions(permissions, PERMISSION_REQUEST_CODE);
-//                return;
-//            }
-//        }
     }
-
-//    private static final int PERMISSION_REQUEST_CODE = 100;
-
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        if (requestCode == PERMISSION_REQUEST_CODE) {
-//            if (grantResults == null) {
-//                return;
-//            }
-//            int isDeniedResult = 0;
-//            for (int result : grantResults) {
-//                isDeniedResult += result;
-//            }
-//            if (isDeniedResult == 0) {//同意
-//                isDenied = false;
-//            } else {//被拒绝
-//
-//            }
-//        }
-//
-//    }
 
     public static int getStatusBarHeight(Context context) {
         Resources resources = context.getResources();
@@ -314,11 +271,11 @@ public class CaptureActivity extends Activity
         }
         //播放声音
         beepManager.playBeepSoundAndVibrate();
-        // TODO: 2019/11/12 获取到结果
+        //获取到结果
         displayResult(text);
     }
 
-    private void displayResult(String resultText) {
+    public void displayResult(String resultText) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.app_name));
         builder.setMessage(resultText);
