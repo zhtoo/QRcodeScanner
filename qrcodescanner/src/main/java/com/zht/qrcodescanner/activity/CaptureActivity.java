@@ -8,11 +8,13 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -125,6 +127,7 @@ public class CaptureActivity extends Activity
         onResumeHandlerCamera();
     }
 
+
     private void onResumeHandlerCamera() {
         cameraManager = new CameraManager(getApplication());
         viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
@@ -149,6 +152,52 @@ public class CaptureActivity extends Activity
             surfaceHolder.addCallback(this);
         }
 
+    }
+
+    double startFingerSpacing;
+
+    /**
+     * 监听缩放手势
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getPointerCount() == 2) {
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+//                case MotionEvent.ACTION_POINTER_DOWN:
+//                    startFingerSpacing = getFingerSpacing(event);
+//                    break;
+//                case MotionEvent.ACTION_MOVE:
+//                    double targetZoomRatio =
+//                            getFingerSpacing(event) / startFingerSpacing;
+//                    cameraManager.setZoom( targetZoomRatio);
+//                    break;
+//                case MotionEvent.ACTION_UP:
+//                    this.startFingerSpacing = 0D;
+//                    break;
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    startFingerSpacing = getFingerSpacing(event);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    double newFingerSpacing = getFingerSpacing(event);
+                    if (newFingerSpacing > startFingerSpacing) {
+                        cameraManager.handleZoom(true);//放大
+                    } else if (newFingerSpacing < startFingerSpacing) {
+                        cameraManager.handleZoom(false);//缩小
+                    }
+                    startFingerSpacing = newFingerSpacing;
+                    break;
+            }
+            return true;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private static double getFingerSpacing(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return Math.sqrt(x * x + y * y);
     }
 
     @Override

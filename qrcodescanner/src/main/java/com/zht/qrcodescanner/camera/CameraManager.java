@@ -28,6 +28,7 @@ import android.view.SurfaceHolder;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.zht.qrcodescanner.camera.open.OpenCamera;
 import com.zht.qrcodescanner.camera.open.OpenCameraInterface;
+import com.zht.qrcodescanner.config.CameraConfigurationUtils;
 
 import java.io.IOException;
 
@@ -361,5 +362,41 @@ public final class CameraManager {
                 rect.left, rect.top, rect.width(), rect.height(),//解码范围
                 false);
     }
+
+//    public void setZoom(double targetZoomRatio) {
+//        Camera.Parameters parameters = camera.getCamera().getParameters();
+//        CameraConfigurationUtils.setZoom(
+//                parameters,
+//                targetZoomRatio);
+//
+//        camera.getCamera().setParameters(parameters);
+//
+//    }
+
+    /**
+     * 处理手势放大/缩小功能
+     * @param isZoomIn
+     */
+    public void handleZoom(boolean isZoomIn) {
+        if (camera == null || camera.getCamera() == null) {
+            Log.i(TAG, "camera is null");
+            return;
+        }
+        Camera.Parameters params = camera.getCamera().getParameters();
+        if (params.isZoomSupported()) {
+            int maxZoom = params.getMaxZoom();
+            int zoom = params.getZoom();
+            if (isZoomIn && zoom < maxZoom) {
+                zoom++;
+            } else if (zoom > 0) {
+                zoom--;
+            }
+            params.setZoom(zoom);
+            camera.getCamera().setParameters(params);
+        } else {
+            Log.i(TAG, "zoom not supported");
+        }
+    }
+
 
 }
