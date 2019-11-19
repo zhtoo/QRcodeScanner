@@ -1,58 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#00000000"
+    android:orientation="vertical">
 
-    <SurfaceView
-        android:id="@+id/preview_view"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="44dp"
+        android:background="#88000000"
+        android:orientation="horizontal">
 
-    <com.zht.zxingcode.QRcode.ViewfinderView
-        android:id="@+id/viewfinder_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <FrameLayout
+            android:id="@+id/qrcode_back"
+            android:layout_width="44dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true">
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <View
-            android:id="@+id/vStatusBarReplacement"
-            android:layout_width="match_parent"
-            android:layout_height="10dp" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:orientation="horizontal">
-
-            <FrameLayout
-                android:id="@+id/qrcode_back"
-                android:layout_alignParentLeft="true"
-                android:layout_width="44dp"
-                android:layout_height="match_parent">
-
-                <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="19dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/qrcode_back_white" />
-            </FrameLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="19dp"
                 android:layout_gravity="center"
-               android:layout_centerInParent="true"
-                android:text="扫一扫"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
+                android:src="@drawable/qrcode_back_white" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:text="签到二维码"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/qrcode_scan_range"
+        android:layout_width="258dp"
+        android:layout_height="258dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="100dp"
+        android:background="@drawable/shape_rect_edge_white"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/qrcode_scan_left_top" />
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/qrcode_scan_right_top" />
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/qrcode_scan_left_bottom" />
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/qrcode_scan_right_bottom" />
+
+        <ImageView
+            android:id="@+id/qrcode_scan_laser"
+            android:layout_width="238dp"
+            android:layout_height="8dp"
+            android:layout_centerHorizontal="true"
+            android:scaleType="fitXY"
+            android:src="@drawable/qrcode_scan_laser" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="256dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/shape_round_rect_gray"
+        android:gravity="center"
+        android:text="将二维码放入框内，可自动扫描"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp" />
 
 
-        </RelativeLayout>
-
-    </LinearLayout>
-
-</merge>
+</LinearLayout>

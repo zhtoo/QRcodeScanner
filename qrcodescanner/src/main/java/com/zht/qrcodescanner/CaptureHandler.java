@@ -191,7 +191,7 @@ public final class CaptureHandler extends Handler {
             state = State.PREVIEW;
             //通过cameraManager发起解码请求
             cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
-            activity.drawViewfinder();
+          /*  activity.drawViewfinder();*/
         }
     }
 

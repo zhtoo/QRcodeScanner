@@ -23,6 +23,7 @@ import android.hardware.Camera;
 import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.View;
 
 
 import com.google.zxing.PlanarYUVLuminanceSource;
@@ -49,6 +50,8 @@ public final class CameraManager {
     private static final int MIN_FRAME_HEIGHT = 240;//最小高度
     private static final int MAX_FRAME_WIDTH = 1920; //1200 = 5/8 * 1920
     private static final int MAX_FRAME_HEIGHT = 1080; // 675= 5/8 * 1080
+
+    private View mScanRange;
 
     private final Context context;
     private final CameraConfigurationManager configManager;
@@ -212,34 +215,60 @@ public final class CameraManager {
      *
      * @return The rectangle to draw on screen in window coordinates.
      */
+    /**
+     * 获取扫码范围，中间方框的大小
+     */
     public synchronized Rect getFramingRect() {
         if (framingRect == null) {
             if (camera == null) {
                 return null;
             }
+
+            if (mScanRange != null) {
+
+                int[] location = new int[2];
+                mScanRange.getLocationOnScreen(location);
+                int x = location[0];
+                int y = location[1];
+
+                if (x != 0 && y != 0) {
+                    int width = mScanRange.getWidth();
+                    int height = mScanRange.getHeight();
+                    framingRect = new Rect(
+                            x,
+                            y,
+                            x + width,
+                            y + height);
+                    return framingRect;
+                }
+            }
+
+
             Point screenResolution = configManager.getScreenResolution();
             if (screenResolution == null) {
                 // Called early, before init even finished
                 return null;
             }
 
-            int width = findDesiredDimensionInRange(
+            int width = findDesiredDimensionInWidthRange(
                     screenResolution.x,
                     MIN_FRAME_WIDTH,
                     MAX_FRAME_WIDTH);
-            int height = findDesiredDimensionInRange(
+            /*int height = findDesiredDimensionInHeightRange(
+                    screenResolution.y,
+                    MIN_FRAME_HEIGHT,
+                    MAX_FRAME_HEIGHT);*/
+            int height = width;
+            int topOffset = findDesiredDimensionInHeightRange(
                     screenResolution.y,
                     MIN_FRAME_HEIGHT,
                     MAX_FRAME_HEIGHT);
 
             //确保是正方形的框，zxing最坑的地方了，不看源码还真不知道影响
-            int min = Math.min(width, height);
-            width = min;
-            height = min;
-
+//            int min = Math.min(width, height);
+//            width = min;
+//            height = min;
             int leftOffset = (screenResolution.x - width) / 2;
-            int topOffset = (screenResolution.y - height) / 2;
-
             framingRect = new Rect(
                     leftOffset,
                     topOffset,
@@ -257,6 +286,29 @@ public final class CameraManager {
         }
         return Math.min(dim, hardMax);
     }
+
+    /**
+     * 指定宽度范围
+     */
+    private static int findDesiredDimensionInWidthRange(int resolution, int hardMin, int hardMax) {
+        int dim = 258 * resolution / 375; // Target 5/8 of each dimension
+        if (dim < hardMin) {
+            return hardMin;
+        }
+        return Math.min(dim, hardMax);
+    }
+
+    /**
+     * 指定高度范围
+     */
+    private static int findDesiredDimensionInHeightRange(int resolution, int hardMin, int hardMax) {
+        int dim = 164 * resolution / 668; // Target 5/8 of each dimension
+        if (dim < hardMin) {
+            return hardMin;
+        }
+        return Math.min(dim, hardMax);
+    }
+
 
     /**
      * Like {@link #getFramingRect} but coordinates are in terms of the preview frame,
@@ -375,6 +427,7 @@ public final class CameraManager {
 
     /**
      * 处理手势放大/缩小功能
+     *
      * @param isZoomIn
      */
     public void handleZoom(boolean isZoomIn) {
@@ -399,4 +452,21 @@ public final class CameraManager {
     }
 
 
+    public void setScanRangeRect(View scanRange) {
+        if (scanRange == null) {
+            return;
+        }
+        mScanRange = scanRange;
+
+//        int[] location = new int[2];
+//        mScanRange.getLocationOnScreen(location);
+//        int x = location[0];
+//        int y = location[1];
+//        Log.e("test", "Screenx--->" + x + "  " + "Screeny--->" + y);
+//        mScanRange.getLocationInWindow(location);
+//        x = location[0];
+//        y = location[1];
+//        Log.e("test", "Window--->" + x + "  " + "Window--->" + y);
+
+    }
 }

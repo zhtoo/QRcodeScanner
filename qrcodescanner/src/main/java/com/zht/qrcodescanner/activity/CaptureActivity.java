@@ -1,14 +1,12 @@
 package com.zht.qrcodescanner.activity;
 
-import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,13 +16,13 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-
 import com.google.zxing.BarcodeFormat;
-import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
 import com.zht.qrcodescanner.AmbientLightManager;
 import com.zht.qrcodescanner.BeepManager;
@@ -37,8 +35,6 @@ import com.zht.qrcodescanner.camera.CameraManager;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
-
 
 public class CaptureActivity extends Activity
         implements SurfaceHolder.Callback {
@@ -48,6 +44,9 @@ public class CaptureActivity extends Activity
     private CameraManager cameraManager;//这里zxing是使用自己的CameraManager类
     private CaptureHandler handler;
 
+    //子类的视图
+    private FrameLayout mContentLayout;
+
     private ViewfinderView viewfinderView;
     private Result lastResult;
     private Collection<BarcodeFormat> decodeFormats;
@@ -56,9 +55,9 @@ public class CaptureActivity extends Activity
     private BeepManager beepManager;
     private AmbientLightManager ambientLightManager;
 
-    private Map<DecodeHintType, ?> decodeHints;
-
-    private boolean isDenied;
+    public View mScanRange;
+    public View mScanLaser;
+    private ObjectAnimator mLaserAnimator;
 
     public ViewfinderView getViewfinderView() {
         return viewfinderView;
@@ -80,8 +79,10 @@ public class CaptureActivity extends Activity
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         //设置透明状态栏
         window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        //调用父类的setContentView
+        super.setContentView(R.layout.activity_capture);
 
-        setContentView(R.layout.activity_capture);
+        mContentLayout = findViewById(R.id.layout_content);
 
         hasSurface = false;
         inactivityTimer = new InactivityTimer(this);
@@ -93,12 +94,59 @@ public class CaptureActivity extends Activity
                 (LinearLayout.LayoutParams) mStatusBarReplacement.getLayoutParams();
         layoutParams.height = getStatusHeightIfNeed(mStatusBarReplacement.getContext());
         mStatusBarReplacement.setLayoutParams(layoutParams);
-        findViewById(R.id.qrcode_back).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+    }
+
+    public void setScanRange(View scanRange) {
+        this.mScanRange = scanRange;
+    }
+
+    public void setScanLaser(View scanLaser) {
+        this.mScanLaser = scanLaser;
+    }
+
+    public void setScanLaserAnimator(ObjectAnimator laseranimator) {
+        this.mLaserAnimator = laseranimator;
+    }
+
+    @Override
+    public void setContentView(int layoutResID) {
+        mContentLayout.removeAllViews();
+        View.inflate(this, layoutResID, mContentLayout);
+        onContentChanged();
+    }
+
+    @Override
+    public void setContentView(View view) {
+        mContentLayout.removeAllViews();
+        mContentLayout.addView(view);
+        onContentChanged();
+    }
+
+    @Override
+    public void setContentView(View view, ViewGroup.LayoutParams params) {
+        mContentLayout.removeAllViews();
+        mContentLayout.addView(view, params);
+        onContentChanged();
+    }
+
+    private void startAnim() {
+        if (mLaserAnimator == null) {
+            return;
+        }
+        mLaserAnimator.start();
+//
+//
+//        float v = TypedValue.applyDimension(
+//                TypedValue.COMPLEX_UNIT_DIP,
+//                258F, mScanLaser.getResources().getDisplayMetrics());
+//        mLaserAnimator = ObjectAnimator.ofFloat(mScanLaser,
+//                "translationY", 0, v);
+//        //设置延迟时间
+//        mLaserAnimator.setDuration(2000);
+//        //设置循环次数
+//        mLaserAnimator.setRepeatCount(ValueAnimator.INFINITE);
+//        mLaserAnimator.setRepeatMode(ValueAnimator.RESTART);
+//        mLaserAnimator.start();
     }
 
     public static int getStatusBarHeight(Context context) {
@@ -127,12 +175,16 @@ public class CaptureActivity extends Activity
         onResumeHandlerCamera();
     }
 
-
     private void onResumeHandlerCamera() {
         cameraManager = new CameraManager(getApplication());
         viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
-        viewfinderView.setCameraManager(cameraManager);
 
+        if (mScanRange != null) {
+            cameraManager.setScanRangeRect(mScanRange);
+        }
+
+        viewfinderView.setCameraManager(cameraManager);
+        startAnim();
         handler = null;
         resetStatusView();
         beepManager.updatePrefs();
@@ -154,10 +206,11 @@ public class CaptureActivity extends Activity
 
     }
 
-    double startFingerSpacing;
+    private double startFingerSpacing;
 
     /**
      * 监听缩放手势
+     *
      * @param event
      * @return
      */
@@ -208,6 +261,9 @@ public class CaptureActivity extends Activity
         }
         inactivityTimer.onPause();
         ambientLightManager.stop();
+        if (mLaserAnimator != null) {
+            mLaserAnimator.cancel();
+        }
         beepManager.close();
         cameraManager.closeDriver();
         //historyManager = null; // Keep for onActivityResult
@@ -221,6 +277,9 @@ public class CaptureActivity extends Activity
 
     @Override
     protected void onDestroy() {
+        if (mLaserAnimator != null) {
+            mLaserAnimator.cancel();
+        }
         inactivityTimer.shutdown();
         super.onDestroy();
     }
@@ -249,7 +308,7 @@ public class CaptureActivity extends Activity
             if (handler == null) {
                 handler = new CaptureHandler(this,
                         decodeFormats,
-                        decodeHints,
+                        null,
                         characterSet,
                         cameraManager);
             }
@@ -318,29 +377,22 @@ public class CaptureActivity extends Activity
         if (TextUtils.isEmpty(text)) {
             return;
         }
+        if (mLaserAnimator != null) {
+            mLaserAnimator.cancel();
+        }
         //播放声音
         beepManager.playBeepSoundAndVibrate();
         //获取到结果
-        displayResult(text);
+        handlerResult(text);
     }
 
-    public void displayResult(String resultText) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.app_name));
-        builder.setMessage(resultText);
-        builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                restartPreviewAfterDelay(0L);
-            }
-        });
-        builder.setOnCancelListener(new FinishListener(this));
-        builder.show();
+    public void handlerResult(String resultText) {
+
     }
 
-    public void drawViewfinder() {
+    /*public void drawViewfinder() {
         viewfinderView.drawViewfinder();
-    }
+    }*/
 
     public void restartPreviewAfterDelay(long delayMS) {
         if (handler != null) {
@@ -351,6 +403,9 @@ public class CaptureActivity extends Activity
 
     private void resetStatusView() {
         viewfinderView.setVisibility(View.VISIBLE);
+        if (mLaserAnimator != null) {
+            mLaserAnimator.start();
+        }
         lastResult = null;
     }
 
